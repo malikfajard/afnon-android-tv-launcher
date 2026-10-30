@@ -1,0 +1,46 @@
+# Build the Android TV launcher APK and publish a convenient preview download.
+name: TV APK
+
+on:
+  push:
+    branches: [main]
+    paths: ['app/**', 'settings.gradle', 'build.gradle', 'gradle/**', '.github/workflows/tv-apk.yml']
+  pull_request:
+    paths: ['app/**', 'settings.gradle', 'build.gradle', 'gradle/**', '.github/workflows/tv-apk.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - name: Build Android TV debug APK
+        run: |
+          chmod +x gradlew
+          ./gradlew :app:assembleDebug --no-daemon --stacktrace
+          cp app/build/outputs/apk/debug/app-debug.apk Afnon-TV-debug.apk
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: afnon-tv-apk
+          path: Afnon-TV-debug.apk
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish preview download
+        if: github.event_name != 'pull_request'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag=tv-preview
+          gh release view "$tag" >/dev/null 2>&1 || gh release create "$tag" --prerelease --title "Afnon Android TV preview" --notes "Preview build for testing on Android TV / Google TV. This is a debug APK, not a signed production release."
+          gh release upload "$tag" Afnon-TV-debug.apk --clobber
+          gh release edit "$tag" --prerelease --notes "Built from main @ ${GITHUB_SHA::7}. Debug APK for testing on Android TV / Google TV; not a signed production release."
