@@ -25,6 +25,7 @@ class FocusTile extends FrameLayout {
     private final Paint fill = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint border = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint ring = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint halo = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final RectF box = new RectF();
     private final RectF ringBox = new RectF();
     private final float radius;
@@ -45,8 +46,11 @@ class FocusTile extends FrameLayout {
         setClipChildren(false);
         border.setStyle(Paint.Style.STROKE);
         ring.setStyle(Paint.Style.STROKE);
-        ring.setColor(Tokens.PLASTER_100);
+        ring.setColor(Tokens.GOLD_200);
         ring.setStrokeWidth(Ui.px(Tokens.FOCUS_RING_WIDTH));
+        halo.setStyle(Paint.Style.STROKE);
+        halo.setColor(0x66F2D99B);
+        halo.setStrokeWidth(Ui.px(10));
         setRest(Tokens.LAPIS_800, 0, 0);
     }
 
@@ -108,6 +112,7 @@ class FocusTile extends FrameLayout {
             float w = Ui.px(Tokens.FOCUS_RING_WIDTH);
             float out = Ui.px(Tokens.FOCUS_RING_OFFSET) + w / 2;
             ringBox.set(box.left - out, box.top - out, box.right + out, box.bottom + out);
+            c.drawRoundRect(ringBox, radius + out, radius + out, halo);
             c.drawRoundRect(ringBox, radius + out, radius + out, ring);
         }
     }
