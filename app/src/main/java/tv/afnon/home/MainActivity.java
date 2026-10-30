@@ -243,11 +243,12 @@ public class MainActivity extends Screen {
             float x = 760 + i * (tileW + gap);
             nodes[F0 + i] = favouriteTile(i < favs.size() ? favs.get(i) : null, F0 + i, x, 300, tileW);
         }
-        for (int i = 0; i < 5; i++) {
-            float x = 760 + i * (tileW + gap);
+        nodes[M0] = moreTile(0 < moreApps.size() ? moreApps.get(0) : null, M0, 760 + 4 * (tileW + gap), 300, tileW);
+        for (int i = 1; i < 5; i++) {
+            float x = 760 + (i - 1) * (tileW + gap);
             nodes[M0 + i] = moreTile(i < moreApps.size() ? moreApps.get(i) : null, M0 + i, x, 590, tileW);
         }
-        nodes[ALL] = allAppsTile(760 + 5 * (tileW + gap), 590, tileW);
+        nodes[ALL] = allAppsTile(760 + 4 * (tileW + gap), 590, tileW);
 
         hints = new LinearLayout(this);
         hints.setOrientation(LinearLayout.HORIZONTAL);
