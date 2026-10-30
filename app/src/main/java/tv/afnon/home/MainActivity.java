@@ -184,32 +184,39 @@ public class MainActivity extends Screen {
     @Override
     void build() {
         newRoot();
-        card = null;   // a reminder card went with the old root
+        card = null;
         radioCard = null;
-        buildArch(488, 26, 12, Tokens.GOLD_200, 8);
 
+        // Left information panel: clock, greeting and a short reflection.
         nodes[ARCH] = archButton();
-
-        // Courtyard: clock and dates, then Wi-Fi and Settings at the end side.
         LinearLayout when = new LinearLayout(this);
         when.setOrientation(LinearLayout.VERTICAL);
-        clock = text(display, 96, Tokens.PLASTER_100);
+        clock = text(display, 112, Tokens.GOLD_400);
         clock.setIncludeFontPadding(false);
         clock.setTextDirection(rtl ? View.TEXT_DIRECTION_RTL : View.TEXT_DIRECTION_LTR);
         clock.setFontFeatureSettings("tnum");
-        // Under the clock the Hijri date (with the city) first, then the Gregorian, smaller and in mist.
         hdate = text(ui400, 26, Tokens.PLASTER_100);
-        gdate = text(ui400, 24, Tokens.MIST_400);
+        gdate = text(ui400, 22, Tokens.MIST_400);
+        TextView greeting = text(displayBold, 42, Tokens.PLASTER_100);
+        greeting.setText("Assalamu'alaikum");
+        TextView quote = text(ui400, 25, Tokens.MIST_400);
+        quote.setText("Awali hari dengan niat baik\ndan hati yang tenang.");
+        quote.setLineSpacing(Ui.ipx(10), 1f);
         when.addView(clock);
         when.addView(hdate);
         when.addView(gdate);
-        ((LinearLayout.LayoutParams) hdate.getLayoutParams()).topMargin = Ui.ipx(6);
+        LinearLayout.LayoutParams gp = new LinearLayout.LayoutParams(-2, -2);
+        gp.topMargin = Ui.ipx(58);
+        when.addView(greeting, gp);
+        LinearLayout.LayoutParams qp = new LinearLayout.LayoutParams(-2, -2);
+        qp.topMargin = Ui.ipx(18);
+        when.addView(quote, qp);
+        ((LinearLayout.LayoutParams) hdate.getLayoutParams()).topMargin = Ui.ipx(10);
         ((LinearLayout.LayoutParams) gdate.getLayoutParams()).topMargin = Ui.ipx(6);
         lineHeight(clock, 1f);
         when.setClipChildren(false);
-        place(when, Tokens.COURT_X, 56, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        place(when, 150, 245, 540, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        // Radio and Wi-Fi side by side, ending 20px before the Settings button.
         nodes[RADIO] = radioPill();
         nodes[WIFI] = wifiPill();
         LinearLayout pills = new LinearLayout(this);
@@ -220,56 +227,31 @@ public class MainActivity extends Screen {
         wlp.setMarginStart(Ui.ipx(20 - 2 * reach));
         pills.addView(nodes[WIFI], wlp);
         FrameLayout.LayoutParams plp = new FrameLayout.LayoutParams(-2, -2, Gravity.TOP | Gravity.END);
-        plp.setMarginEnd(Ui.ipx(1920 - (Tokens.COURT_X + Tokens.COURT_W) + 72 + 20 - reach));
+        plp.setMarginEnd(Ui.ipx(1920 - 1824 + 72 + 20 - reach));
         plp.topMargin = Ui.ipx(56 - reach);
         root.addView(pills, plp);
         nodes[SETTINGS] = settingsButton();
 
-        // The prayer strip: information only, never focusable.
-        float cw = (Tokens.COURT_W - 5 * 12) / 6f;
-        for (int i = 0; i < 6; i++) {
-            LinearLayout v = new LinearLayout(this);
-            v.setOrientation(LinearLayout.VERTICAL);
-            v.setPadding(Ui.ipx(20), Ui.ipx(16), Ui.ipx(20), Ui.ipx(16));
-            cellTag[i] = text(ui400, 20, Tokens.PLASTER_100);
-            cellName[i] = text(ui400, 26, Tokens.PLASTER_100);
-            cellTime[i] = text(ui400, 34, Tokens.PLASTER_100);
-            cellTime[i].setTextDirection(rtl ? View.TEXT_DIRECTION_RTL : View.TEXT_DIRECTION_LTR);
-            cellTime[i].setTextAlignment(View.TEXT_ALIGNMENT_VIEW_START);
-            cellTime[i].setFontFeatureSettings("tnum");
-            cellTime[i].setSingleLine(true);
-            v.addView(cellTag[i], new LinearLayout.LayoutParams(-1, 0, 1));
-            v.addView(cellName[i], new LinearLayout.LayoutParams(-1, -2));
-            v.addView(cellTime[i], new LinearLayout.LayoutParams(-1, -2));
-            lineHeight(cellName[i], 1.1f);
-            lineHeight(cellTime[i], 1.1f);
-            v.setClipChildren(false);
-            cell[i] = v;
-            place(v, Tokens.COURT_X + i * (cw + 12), 290, cw, 146);
-        }
-
-        TextView fav = caps(text(ui400, 22, Tokens.MIST_400));
-        fav.setText(t.fav());
-        place(fav, Tokens.COURT_X, LABEL_ABOVE_FAV, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        float fw = (Tokens.COURT_W - 3 * 24) / 4f;
+        // Two consistent rows of real installed-app icons.
+        TextView appTitle = caps(text(ui400, 22, Tokens.MIST_400));
+        appTitle.setText(t.fav() + "  ·  " + t.more());
+        place(appTitle, 760, 205, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         List<String> favs = Apps.slots(this, t);
+        List<String> moreApps = Apps.more(this, t, 6);
+        float gap = 20f, tileW = (1064f - 4f * gap) / 5f, tileH = 226f;
         for (int i = 0; i < 4; i++) {
-            nodes[F0 + i] = favouriteTile(i < favs.size() ? favs.get(i) : null, F0 + i, Tokens.COURT_X + i * (fw + 24), 520, fw);
+            float x = 760 + i * (tileW + gap);
+            nodes[F0 + i] = favouriteTile(i < favs.size() ? favs.get(i) : null, F0 + i, x, 300, tileW);
         }
-
-        TextView more = caps(text(ui400, 22, Tokens.MIST_400));
-        more.setText(t.more());
-        place(more, Tokens.COURT_X, LABEL_ABOVE_MORE, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        float mw = (Tokens.COURT_W - 5 * 20) / 6f;
-        List<String> moreApps = Apps.more(this, t, 5);
         for (int i = 0; i < 5; i++) {
-            nodes[M0 + i] = moreTile(i < moreApps.size() ? moreApps.get(i) : null, M0 + i, Tokens.COURT_X + i * (mw + 20), 764, mw);
+            float x = 760 + i * (tileW + gap);
+            nodes[M0 + i] = moreTile(i < moreApps.size() ? moreApps.get(i) : null, M0 + i, x, 590, tileW);
         }
-        nodes[ALL] = allAppsTile(Tokens.COURT_X + 5 * (mw + 20), 764, mw);
+        nodes[ALL] = allAppsTile(760 + 5 * (tileW + gap), 590, tileW);
 
         hints = new LinearLayout(this);
         hints.setOrientation(LinearLayout.HORIZONTAL);
-        place(hints, Tokens.COURT_X, 962, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        place(hints, 760, 962, ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
         for (int i = 0; i < NODES; i++) {
             final int n = i;
@@ -280,7 +262,7 @@ public class MainActivity extends Screen {
         builtApps = appsKey();
         lastMinute = -1;
         render(true);
-        nodes[ARCH].requestFocus();
+        nodes[F0].requestFocus();
     }
 
     private View archButton() {
@@ -359,7 +341,7 @@ public class MainActivity extends Screen {
         label.setText(name);
         label.setSingleLine(true);
         label.setEllipsize(TextUtils.TruncateAt.END);
-        col.addView(icon, new LinearLayout.LayoutParams(Ui.ipx(48), Ui.ipx(48)));
+        col.addView(icon, new LinearLayout.LayoutParams(Ui.ipx(72), Ui.ipx(72)));
         col.addView(new View(this), new LinearLayout.LayoutParams(1, 0, 1));
         col.addView(label, new LinearLayout.LayoutParams(-1, -2));
         b.addView(col, new FrameLayout.LayoutParams(-1, -1));
@@ -372,18 +354,26 @@ public class MainActivity extends Screen {
 
     private View moreTile(String pkg, int node, float x, float y, float w) {
         FocusTile b = new FocusTile(this, Tokens.RADIUS_CELL);
+        LinearLayout col = new LinearLayout(this);
+        col.setOrientation(LinearLayout.VERTICAL);
+        col.setPadding(Ui.ipx(24), Ui.ipx(22), Ui.ipx(24), Ui.ipx(22));
+        ImageView icon = new ImageView(this);
+        icon.setScaleType(ImageView.ScaleType.FIT_CENTER);
+        Drawable d = Apps.icon(this, pkg);
+        if (d != null) icon.setImageDrawable(d);
         String name = pkg == null ? "" : Apps.name(this, t, pkg);
-        TextView label = text(ui400, 22, Tokens.PLASTER_100);
+        TextView label = text(ui500, 25, Tokens.PLASTER_100);
         label.setText(name);
-        label.setMaxLines(2);
+        label.setSingleLine(true);
         label.setEllipsize(TextUtils.TruncateAt.END);
-        label.setPadding(Ui.ipx(18), Ui.ipx(18), Ui.ipx(18), Ui.ipx(18));
-        label.setGravity(Gravity.BOTTOM | Gravity.START);
-        b.addView(label, new FrameLayout.LayoutParams(-1, -1));
+        col.addView(icon, new LinearLayout.LayoutParams(Ui.ipx(72), Ui.ipx(72)));
+        col.addView(new View(this), new LinearLayout.LayoutParams(1, 0, 1));
+        col.addView(label, new LinearLayout.LayoutParams(-1, -2));
+        b.addView(col, new FrameLayout.LayoutParams(-1, -1));
         b.setLook(f -> label.setTextColor(f ? Tokens.LAPIS_900 : Tokens.PLASTER_100));
         b.setOnClickListener(v -> { if (pkg != null) Apps.launch(this, pkg); });
         nodeLabel[node] = name;
-        placeTile(b, x, y, w, 112);
+        placeTile(b, x, y, w, 226);
         return b;
     }
 
@@ -419,7 +409,7 @@ public class MainActivity extends Screen {
             day = new PrayerDay(this, new Date(now.getTime() + 1000));
             renderMinute(now);
         }
-        renderCountdown(day, now, archFocused);
+        if (arch != null) renderCountdown(day, now, archFocused);
     }
 
     private void renderMinute(Date now) {
